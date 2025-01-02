@@ -9,7 +9,8 @@ from distutils.errors import CCompilerError, DistutilsExecError, \
 from distutils.command.build_ext import build_ext
 from distutils.command.sdist import sdist as _sdist
 import glob
-from imp import load_source
+import importlib.machinery
+import importlib.util
 import io
 import os
 import shutil
@@ -17,6 +18,14 @@ import sys
 import traceback
 
 from setuptools import setup, find_packages, Extension
+
+def load_source(modname, filename):
+    loader = importlib.machinery.SourceFileLoader(modname, filename)
+    spec = importlib.util.spec_from_file_location(
+        modname, filename, loader=loader)
+    module = importlib.util.module_from_spec(spec)
+    loader.exec_module(module)
+    return module
 
 if not hasattr(sys, 'version_info') or \
         sys.version_info < (2, 6, 0, 'final'):
